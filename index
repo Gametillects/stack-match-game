@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stack and Match - Educational Game</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+        .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useRef } = React;
+
+        const StackMatchGame = () => {
+            const [gameState, setGameState] = useState({
+                targetPattern: { color: 'red', letter: 'A', shape: 'circle' },
+                currentStack: { color: null, letter: null, shape: null },
+                score: 0,
+                celebration: false
+            });
+
+            const [draggedItem, setDraggedItem] = useState(null);
+            const dropZoneRef = useRef(null);
+
+            // Available tiles
+            const colors = ['red', 'blue', 'green', 'yellow'];
+            const letters = ['A', 'B', 'C', 'D', 'E'];
+            const shapes = ['circle', 'square', 'triangle', 'star'];
+
+            const handleDragStart = (e, item) => {
+                setDraggedItem(item);
+                e.dataTransfer.effectAllowed = 'move';
+            };
+
+            const handleDragOver = (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+            };
+
+            const handleDrop = (e) => {
+                e.preventDefault();
+                if (!draggedItem) return;
+
+                const newStack = { ...gameState.currentStack };
+                
+                // Only allow stacking in the correct order: color first, then letter, then shape
+                if (draggedItem.type === 'color' && !newStack.color) {
+                    newStack.color = draggedItem.value;
+                } else if (draggedItem.type === 'letter' && newStack.color && !newStack.letter) {
+                    newStack.letter = draggedItem.value;
+                } else if (draggedItem.type === 'shape' && newStack.color && newStack.letter && !newStack.shape) {
+                    newStack.shape = draggedItem.value;
+                }
+
+                // Check if pattern is complete and matches target
+                const isComplete = newStack.color && newStack.letter && newStack.shape;
+                const isMatch = isComplete && 
+                    newStack.color === gameState.targetPattern.color &&
+                    newStack.letter === gameState.targetPattern.letter &&
+                    newStack.shape === gameState.targetPattern.shape;
+
+                if (isMatch) {
+                    setGameState(prev => ({
+                        ...prev,
+                        currentStack: newStack,
+                        score: prev.score + 10,
+                        celebration: true
+                    }));
+                    
+                    // Reset after celebration
+                    setTimeout(() => {
+                        const newTarget = {
+                            color: colors[Math.floor(Math.random() * colors.length)],
+                            letter: letters[Math.floor(Math.random() * letters.length)],
+                            shape: shapes[Math.floor(Math.random() * shapes.length)]
+                        };
+                        setGameState(prev => ({
+                            ...prev,
+                            targetPattern: newTarget,
+                            currentStack: { color: null, letter: null, shape: null },
+                            celebration: false
+                        }));
+                    }, 2000);
+                } else {
+                    setGameState(prev => ({ ...prev, currentStack: newStack }));
+                }
+
+                setDraggedItem(null);
+            };
+
+            const resetStack = () => {
+                setGameState(prev => ({
+                    ...prev,
+                    currentStack: { color: null, letter: null, shape: null }
+                }));
+            };
+
+            const renderShape = (shape, color = '#ddd', size = 60) => {
+                const style = {
+                    width: size,
+                    height: size,
+                    backgroundColor: color,
+                    display: 'inline-block',
+                    position: 'relative'
+                };
+
+                switch (shape) {
+                    case 'circle':
+                        return React.createElement('div', { style: { ...style, borderRadius: '50%' } });
+                    case 'square':
+                        return React.createElement('div', { style });
+                    case 'triangle':
+                        return React.createElement('div', {
+                            style: {
+                                width: 0,
+                                height: 0,
+                                borderLeft: `${size/2}px solid transparent`,
+                                borderRight: `${size/2}px solid transparent`,
+                                borderBottom: `${size}px solid ${color}`,
+                                display: 'inline-block'
+                            }
+                        });
+                    case 'star':
+                        return React.createElement('div', {
+                            style: {
+                                width: size,
+                                height: size,
+                                backgroundColor: color,
+                                clipPath: 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)',
+                                display: 'inline-block'
+                            }
+                        });
+                    default:
+                        return React.createElement('div', { style });
+                }
+            };
+
+            const StackDisplay = ({ stack, isTarget = false }) => {
+                const baseColor = stack.color || (isTarget ? gameState.targetPattern.color : '#f0f0f0');
+                const letter = stack.letter || (isTarget ? gameState.targetPattern.letter : '?');
+                const shape = stack.shape || (isTarget ? gameState.targetPattern.shape : 'circle');
+                
+                return React.createElement('div', { className: "relative w-24 h-24 mx-auto" },
+                    // Color base layer
+                    React.createElement('div', {
+                        className: `absolute inset-0 rounded-lg ${isTarget ? 'border-4 border-dashed border-gray-400' : 'border-2 border-gray-300'}`,
+                        style: { backgroundColor: baseColor }
+                    }),
+                    
+                    // Letter layer
+                    React.createElement('div', { className: "absolute inset-0 flex items-center justify-center" },
+                        React.createElement('span', { className: "text-3xl font-bold text-white drop-shadow-lg" }, letter)
+                    ),
+                    
+                    // Shape layer
+                    React.createElement('div', { className: "absolute inset-0 flex items-center justify-center" },
+                        React.createElement('div', { className: "w-16 h-16 border-4 border-white rounded-full opacity-75 flex items-center justify-center" },
+                            renderShape(shape, 'transparent', 40),
+                            React.createElement('div', {
+                                className: "absolute inset-0 border-4 border-white",
+                                style: {
+                                    borderRadius: shape === 'circle' ? '50%' : shape === 'square' ? '0' : '0',
+                                    clipPath: shape === 'triangle' ? 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)' : 'none'
+                                }
+                            })
+                        )
+                    )
+                );
+            };
+
+            return React.createElement('div', { className: "min-h-screen bg-gradient-to-b from-blue-100 to-green-100 p-4" },
+                React.createElement('div', { className: "max-w-4xl mx-auto" },
+                    // Header
+                    React.createElement('div', { className: "text-center mb-8" },
+                        React.createElement('h1', { className: "text-4xl font-bold text-purple-800 mb-2" }, "Stack and Match!"),
+                        React.createElement('p', { className: "text-lg text-gray-700" }, "Drag the pieces to match the pattern"),
+                        React.createElement('div', { className: "text-2xl font-bold text-green-600" }, `Score: ${gameState.score}`)
+                    ),
+
+                    // Game Area
+                    React.createElement('div', { className: "flex flex-col lg:flex-row gap-8" },
+                        // Target Pattern
+                        React.createElement('div', { className: "flex-1" },
+                            React.createElement('h2', { className: "text-2xl font-bold text-center mb-4 text-purple-700" }, "Match This!"),
+                            React.createElement('div', { className: "bg-white rounded-lg p-6 shadow-lg" },
+                                React.createElement(StackDisplay, { stack: {}, isTarget: true }),
+                                React.createElement('p', { className: "text-center mt-4 text-gray-600" },
+                                    `Color: ${gameState.targetPattern.color} • Letter: ${gameState.targetPattern.letter} • Shape: ${gameState.targetPattern.shape}`
+                                )
+                            )
+                        ),
+
+                        // Drop Zone
+                        React.createElement('div', { className: "flex-1" },
+                            React.createElement('h2', { className: "text-2xl font-bold text-center mb-4 text-purple-700" }, "Your Stack"),
+                            React.createElement('div', {
+                                ref: dropZoneRef,
+                                onDragOver: handleDragOver,
+                                onDrop: handleDrop,
+                                className: `bg-white rounded-lg p-6 shadow-lg border-4 border-dashed border-gray-300 min-h-40 flex flex-col items-center justify-center ${gameState.celebration ? 'animate-pulse bg-yellow-100' : ''}`
+                            },
+                                gameState.celebration ? 
+                                    React.createElement('div', { className: "text-center" },
+                                        React.createElement('div', { className: "text-4xl mb-2" }, "🎉"),
+                                        React.createElement('div', { className: "text-2xl font-bold text-green-600" }, "Perfect Match!")
+                                    ) :
+                                    React.createElement(React.Fragment, null,
+                                        React.createElement(StackDisplay, { stack: gameState.currentStack }),
+                                        React.createElement('button', {
+                                            onClick: resetStack,
+                                            className: "mt-4 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                                        }, "Reset Stack")
+                                    )
+                            )
+                        )
+                    ),
+
+                    // Tile Palette
+                    React.createElement('div', { className: "mt-8 grid grid-cols-3 gap-6" },
+                        // Colors
+                        React.createElement('div', null,
+                            React.createElement('h3', { className: "text-xl font-bold text-center mb-4 text-purple-700" }, "Colors"),
+                            React.createElement('div', { className: "grid grid-cols-2 gap-3" },
+                                colors.map(color => 
+                                    React.createElement('div', {
+                                        key: color,
+                                        draggable: true,
+                                        onDragStart: (e) => handleDragStart(e, { type: 'color', value: color }),
+                                        className: "w-16 h-16 rounded-lg cursor-move hover:scale-110 transition-transform shadow-lg border-2 border-gray-300",
+                                        style: { backgroundColor: color },
+                                        title: `Color: ${color}`
+                                    })
+                                )
+                            )
+                        ),
+
+                        // Letters
+                        React.createElement('div', null,
+                            React.createElement('h3', { className: "text-xl font-bold text-center mb-4 text-purple-700" }, "Letters"),
+                            React.createElement('div', { className: "grid grid-cols-3 gap-3" },
+                                letters.map(letter => 
+                                    React.createElement('div', {
+                                        key: letter,
+                                        draggable: true,
+                                        onDragStart: (e) => handleDragStart(e, { type: 'letter', value: letter }),
+                                        className: "w-16 h-16 bg-white rounded-lg cursor-move hover:scale-110 transition-transform shadow-lg border-2 border-gray-300 flex items-center justify-center",
+                                        title: `Letter: ${letter}`
+                                    },
+                                        React.createElement('span', { className: "text-2xl font-bold text-gray-800" }, letter)
+                                    )
+                                )
+                            )
+                        ),
+
+                        // Shapes
+                        React.createElement('div', null,
+                            React.createElement('h3', { className: "text-xl font-bold text-center mb-4 text-purple-700" }, "Shapes"),
+                            React.createElement('div', { className: "grid grid-cols-2 gap-3" },
+                                shapes.map(shape => 
+                                    React.createElement('div', {
+                                        key: shape,
+                                        draggable: true,
+                                        onDragStart: (e) => handleDragStart(e, { type: 'shape', value: shape }),
+                                        className: "w-16 h-16 bg-white rounded-lg cursor-move hover:scale-110 transition-transform shadow-lg border-2 border-gray-300 flex items-center justify-center",
+                                        title: `Shape: ${shape}`
+                                    },
+                                        renderShape(shape, '#666', 40)
+                                    )
+                                )
+                            )
+                        )
+                    ),
+
+                    // Instructions
+                    React.createElement('div', { className: "mt-8 bg-white rounded-lg p-6 shadow-lg" },
+                        React.createElement('h3', { className: "text-xl font-bold mb-3 text-purple-700" }, "How to Play:"),
+                        React.createElement('ol', { className: "list-decimal list-inside space-y-2 text-gray-700" },
+                            React.createElement('li', null, "Look at the target pattern on the left"),
+                            React.createElement('li', null, "Drag a color tile to your stack first"),
+                            React.createElement('li', null, "Then drag the matching letter tile on top"),
+                            React.createElement('li', null, "Finally, drag the matching shape tile to complete your stack"),
+                            React.createElement('li', null, "Match all three to score points and get a new pattern!")
+                        )
+                    )
+                )
+            );
+        };
+
+        ReactDOM.render(React.createElement(StackMatchGame), document.getElementById('root'));
+    </script>
+</body>
+</html>
