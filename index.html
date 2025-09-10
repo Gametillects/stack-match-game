@@ -3,301 +3,1111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stack and Match - Educational Game</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Stack & Match - by Gametillects Inc.</title>
     <style>
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: .5; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
         }
-        .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 25px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border-radius: 15px;
+            color: white;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+        .header h1 {
+            margin: 0 0 10px 0;
+            font-size: 2.5em;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .header p {
+            margin: 0;
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        .global-supply {
+            background: #f8f9fa;
+            border: 3px solid #dee2e6;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .supply-counter {
+            display: inline-block;
+            margin: 8px 12px;
+            padding: 10px 18px;
+            border-radius: 12px;
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+            font-size: 1.1em;
+        }
+        .game-status {
+            background: linear-gradient(135deg, #e3f2fd, #f8f9fa);
+            border: 3px solid #2196f3;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2);
+        }
+        .game-status h3 {
+            margin: 0 0 15px 0;
+            color: #1976d2;
+            font-size: 1.5em;
+        }
+        .game-status p {
+            margin: 0 0 25px 0;
+            color: #424242;
+            font-size: 1.1em;
+        }
+        .players-area {
+            display: flex;
+            gap: 25px;
+            margin-bottom: 30px;
+            justify-content: center;
+        }
+        .player-card {
+            flex: 1;
+            max-width: 500px;
+            border: 4px solid #e9ecef;
+            border-radius: 20px;
+            padding: 25px;
+            background: #fafafa;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        .player-card.active {
+            border-color: #28a745;
+            background: linear-gradient(135deg, #f0fff4, #e8f5e8);
+            box-shadow: 0 8px 24px rgba(40, 167, 69, 0.3);
+            transform: translateY(-5px);
+        }
+        .player-name {
+            text-align: center;
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #343a40;
+        }
+        .player-card.active .player-name {
+            color: #155724;
+        }
+        .word-card {
+            text-align: center;
+            margin-bottom: 25px;
+            padding: 25px;
+            background: linear-gradient(135deg, #ffffff, #f8f9fa);
+            border-radius: 16px;
+            border: 3px solid #333;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+        }
+        .word-emoji {
+            font-size: 4em;
+            margin-bottom: 15px;
+            display: block;
+        }
+        .word-title {
+            font-weight: bold;
+            margin: 15px 0;
+            font-size: 1.5em;
+            color: #212529;
+            letter-spacing: 2px;
+        }
+        .word-pattern {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 20px 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 12px;
+        }
+        .pattern-tile {
+            width: 70px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: black;
+            text-shadow: 1px 1px 3px rgba(255,255,255,0.8);
+            border: 4px solid #333;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+            position: relative;
+            transition: transform 0.2s ease;
+        }
+        .pattern-tile:hover {
+            transform: scale(1.05);
+        }
+        .pattern-tile.triangle {
+            border-radius: 0;
+            clip-path: polygon(50% 8%, 8% 92%, 92% 92%);
+            border: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+        }
+        .pattern-tile.circle {
+            border-radius: 50%;
+        }
+        .pattern-tile.hexagon {
+            border-radius: 0;
+            clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+            border: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+        }
+        .pattern-tile.square {
+            border-radius: 12px;
+        }
+        .board-slots {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .board-slot {
+            width: 75px;
+            height: 75px;
+            border: 4px solid #333;
+            border-radius: 12px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: bold;
+            background: white;
+            color: black;
+            text-shadow: 1px 1px 3px rgba(255,255,255,0.8);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .board-slot:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+        }
+        .board-slot.placement-hint {
+            background: rgba(255, 193, 7, 0.3);
+            border: 3px dashed #ffc107;
+        }
+        .board-slot.complete {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            border-color: #28a745;
+        }
+        .slot-info {
+            position: absolute;
+            top: 3px;
+            left: 5px;
+            font-size: 10px;
+            color: #666;
+            background: rgba(255,255,255,0.95);
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        .slot-shape {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, #495057, #6c757d);
+            border: 2px solid #333;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8px;
+            color: white;
+        }
+        .slot-shape.triangle {
+            clip-path: polygon(50% 10%, 10% 90%, 90% 90%);
+            border: none;
+        }
+        .slot-shape.circle {
+            border-radius: 50%;
+        }
+        .slot-shape.hexagon {
+            clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+            border: none;
+        }
+        .progress-indicator {
+            text-align: center;
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #e3f2fd, #f3e5f5);
+            border: 2px solid #9c27b0;
+        }
+        .progress-indicator.complete {
+            background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
+            border-color: #4caf50;
+            color: #2e7d32;
+        }
+        .inventory-section {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            border: 2px solid #dee2e6;
+        }
+        .inventory-title {
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #495057;
+            font-size: 1.1em;
+        }
+        .inventory-visual {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            min-height: 70px;
+            align-items: center;
+        }
+        .inventory-tile {
+            width: 55px;
+            height: 55px;
+            border: 3px solid #333;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: black;
+            text-shadow: 1px 1px 3px rgba(255,255,255,0.8);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+        }
+        .inventory-tile:hover {
+            transform: scale(1.1) translateY(-2px);
+            box-shadow: 0 5px 12px rgba(0,0,0,0.25);
+        }
+        .inventory-tile.selected {
+            border: 4px solid #ff6b6b;
+            box-shadow: 0 0 15px rgba(255, 107, 107, 0.5);
+        }
+        .inventory-tile.letter {
+            background: linear-gradient(135deg, #fff, #f8f9fa);
+            border-color: #6c757d;
+        }
+        .inventory-tile.color {
+            border-color: #333;
+        }
+        .inventory-tile.shape {
+            background: linear-gradient(135deg, #495057, #6c757d);
+            color: white;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+        }
+        .inventory-tile.triangle {
+            clip-path: polygon(50% 10%, 10% 90%, 90% 90%);
+            border: none;
+        }
+        .inventory-tile.circle {
+            border-radius: 50%;
+        }
+        .inventory-tile.hexagon {
+            clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+            border: none;
+        }
+        .inventory-tile.triangle.selected,
+        .inventory-tile.circle.selected,
+        .inventory-tile.hexagon.selected {
+            border: 4px solid #ff6b6b;
+        }
+        .empty-slot {
+            width: 55px;
+            height: 55px;
+            border: 3px dashed #ccc;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            opacity: 0.6;
+        }
+        .action-area {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            border: 2px solid #dee2e6;
+        }
+        .btn {
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 20px 40px;
+            font-size: 1.3em;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+            transition: all 0.2s ease;
+        }
+        .btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .btn-spin {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+        }
+        .btn-end {
+            background: linear-gradient(135deg, #28a745, #20c997);
+        }
+        .spin-result {
+            background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+            border: 3px solid #ffc107;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px 0;
+            font-size: 1.3em;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+        }
+        .win-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .win-content {
+            background: linear-gradient(135deg, #fff, #f8f9fa);
+            padding: 50px;
+            border-radius: 25px;
+            text-align: center;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.4);
+            border: 4px solid #28a745;
+        }
+        .special-area {
+            background: #f0f8ff;
+            border: 2px solid #4a90e2;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .wild-grid {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        .wild-btn {
+            width: 60px;
+            height: 60px;
+            border: 3px solid #333;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+        }
+        .wild-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 12px rgba(0,0,0,0.25);
+        }
+        .wild-btn.triangle {
+            clip-path: polygon(50% 10%, 10% 90%, 90% 90%);
+            border: none;
+        }
+        .wild-btn.circle {
+            border-radius: 50%;
+        }
+        .wild-btn.hexagon {
+            clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+            border: none;
+        }
     </style>
 </head>
 <body>
-    <div id="root"></div>
+    <div class="container">
+        <div class="header">
+            <h1>Stack & Match</h1>
+            <p>by Gametillects Inc. - Educational Word Building Game</p>
+        </div>
+        <div id="app"></div>
+    </div>
 
-    <script type="text/babel">
-        const { useState, useRef } = React;
+    <script>
+        const COLORS = ['red', 'blue', 'green', 'yellow', 'purple', 'orange'];
+        const SHAPES = ['square', 'triangle', 'circle', 'hexagon'];
+        
+        const WORD_CARDS = [
+            { 
+                word: 'BALL', image: '⚽',
+                pattern: [
+                    { letter: 'B', color: 'green', shape: 'square' },
+                    { letter: 'A', color: 'red', shape: 'triangle' },
+                    { letter: 'L', color: 'yellow', shape: 'hexagon' },
+                    { letter: 'L', color: 'blue', shape: 'circle' }
+                ]
+            },
+            { 
+                word: 'CAKE', image: '🎂',
+                pattern: [
+                    { letter: 'C', color: 'purple', shape: 'circle' },
+                    { letter: 'A', color: 'orange', shape: 'square' },
+                    { letter: 'K', color: 'blue', shape: 'triangle' },
+                    { letter: 'E', color: 'red', shape: 'hexagon' }
+                ]
+            },
+            { 
+                word: 'FISH', image: '🐟',
+                pattern: [
+                    { letter: 'F', color: 'red', shape: 'circle' },
+                    { letter: 'I', color: 'blue', shape: 'square' },
+                    { letter: 'S', color: 'green', shape: 'hexagon' },
+                    { letter: 'H', color: 'purple', shape: 'triangle' }
+                ]
+            }
+        ];
 
-        const StackMatchGame = () => {
-            const [gameState, setGameState] = useState({
-                targetPattern: { color: 'red', letter: 'A', shape: 'circle' },
-                currentStack: { color: null, letter: null, shape: null },
-                score: 0,
-                celebration: false
-            });
-
-            const [draggedItem, setDraggedItem] = useState(null);
-            const dropZoneRef = useRef(null);
-
-            // Available tiles
-            const colors = ['red', 'blue', 'green', 'yellow'];
-            const letters = ['A', 'B', 'C', 'D', 'E'];
-            const shapes = ['circle', 'square', 'triangle', 'star'];
-
-            const handleDragStart = (e, item) => {
-                setDraggedItem(item);
-                e.dataTransfer.effectAllowed = 'move';
-            };
-
-            const handleDragOver = (e) => {
-                e.preventDefault();
-                e.dataTransfer.dropEffect = 'move';
-            };
-
-            const handleDrop = (e) => {
-                e.preventDefault();
-                if (!draggedItem) return;
-
-                const newStack = { ...gameState.currentStack };
-                
-                // Only allow stacking in the correct order: color first, then letter, then shape
-                if (draggedItem.type === 'color' && !newStack.color) {
-                    newStack.color = draggedItem.value;
-                } else if (draggedItem.type === 'letter' && newStack.color && !newStack.letter) {
-                    newStack.letter = draggedItem.value;
-                } else if (draggedItem.type === 'shape' && newStack.color && newStack.letter && !newStack.shape) {
-                    newStack.shape = draggedItem.value;
-                }
-
-                // Check if pattern is complete and matches target
-                const isComplete = newStack.color && newStack.letter && newStack.shape;
-                const isMatch = isComplete && 
-                    newStack.color === gameState.targetPattern.color &&
-                    newStack.letter === gameState.targetPattern.letter &&
-                    newStack.shape === gameState.targetPattern.shape;
-
-                if (isMatch) {
-                    setGameState(prev => ({
-                        ...prev,
-                        currentStack: newStack,
-                        score: prev.score + 10,
-                        celebration: true
-                    }));
-                    
-                    // Reset after celebration
-                    setTimeout(() => {
-                        const newTarget = {
-                            color: colors[Math.floor(Math.random() * colors.length)],
-                            letter: letters[Math.floor(Math.random() * letters.length)],
-                            shape: shapes[Math.floor(Math.random() * shapes.length)]
-                        };
-                        setGameState(prev => ({
-                            ...prev,
-                            targetPattern: newTarget,
-                            currentStack: { color: null, letter: null, shape: null },
-                            celebration: false
-                        }));
-                    }, 2000);
-                } else {
-                    setGameState(prev => ({ ...prev, currentStack: newStack }));
-                }
-
-                setDraggedItem(null);
-            };
-
-            const resetStack = () => {
-                setGameState(prev => ({
-                    ...prev,
-                    currentStack: { color: null, letter: null, shape: null }
-                }));
-            };
-
-            const renderShape = (shape, color = '#ddd', size = 60) => {
-                const style = {
-                    width: size,
-                    height: size,
-                    backgroundColor: color,
-                    display: 'inline-block',
-                    position: 'relative'
-                };
-
-                switch (shape) {
-                    case 'circle':
-                        return React.createElement('div', { style: { ...style, borderRadius: '50%' } });
-                    case 'square':
-                        return React.createElement('div', { style });
-                    case 'triangle':
-                        return React.createElement('div', {
-                            style: {
-                                width: 0,
-                                height: 0,
-                                borderLeft: `${size/2}px solid transparent`,
-                                borderRight: `${size/2}px solid transparent`,
-                                borderBottom: `${size}px solid ${color}`,
-                                display: 'inline-block'
-                            }
-                        });
-                    case 'star':
-                        return React.createElement('div', {
-                            style: {
-                                width: size,
-                                height: size,
-                                backgroundColor: color,
-                                clipPath: 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)',
-                                display: 'inline-block'
-                            }
-                        });
-                    default:
-                        return React.createElement('div', { style });
-                }
-            };
-
-            const StackDisplay = ({ stack, isTarget = false }) => {
-                const baseColor = stack.color || (isTarget ? gameState.targetPattern.color : '#f0f0f0');
-                const letter = stack.letter || (isTarget ? gameState.targetPattern.letter : '?');
-                const shape = stack.shape || (isTarget ? gameState.targetPattern.shape : 'circle');
-                
-                return React.createElement('div', { className: "relative w-24 h-24 mx-auto" },
-                    // Color base layer
-                    React.createElement('div', {
-                        className: `absolute inset-0 rounded-lg ${isTarget ? 'border-4 border-dashed border-gray-400' : 'border-2 border-gray-300'}`,
-                        style: { backgroundColor: baseColor }
-                    }),
-                    
-                    // Letter layer
-                    React.createElement('div', { className: "absolute inset-0 flex items-center justify-center" },
-                        React.createElement('span', { className: "text-3xl font-bold text-white drop-shadow-lg" }, letter)
-                    ),
-                    
-                    // Shape layer
-                    React.createElement('div', { className: "absolute inset-0 flex items-center justify-center" },
-                        React.createElement('div', { className: "w-16 h-16 border-4 border-white rounded-full opacity-75 flex items-center justify-center" },
-                            renderShape(shape, 'transparent', 40),
-                            React.createElement('div', {
-                                className: "absolute inset-0 border-4 border-white",
-                                style: {
-                                    borderRadius: shape === 'circle' ? '50%' : shape === 'square' ? '0' : '0',
-                                    clipPath: shape === 'triangle' ? 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)' : 'none'
-                                }
-                            })
-                        )
-                    )
-                );
-            };
-
-            return React.createElement('div', { className: "min-h-screen bg-gradient-to-b from-blue-100 to-green-100 p-4" },
-                React.createElement('div', { className: "max-w-4xl mx-auto" },
-                    // Header
-                    React.createElement('div', { className: "text-center mb-8" },
-                        React.createElement('h1', { className: "text-4xl font-bold text-purple-800 mb-2" }, "Stack and Match!"),
-                        React.createElement('p', { className: "text-lg text-gray-700" }, "Drag the pieces to match the pattern"),
-                        React.createElement('div', { className: "text-2xl font-bold text-green-600" }, `Score: ${gameState.score}`)
-                    ),
-
-                    // Game Area
-                    React.createElement('div', { className: "flex flex-col lg:flex-row gap-8" },
-                        // Target Pattern
-                        React.createElement('div', { className: "flex-1" },
-                            React.createElement('h2', { className: "text-2xl font-bold text-center mb-4 text-purple-700" }, "Match This!"),
-                            React.createElement('div', { className: "bg-white rounded-lg p-6 shadow-lg" },
-                                React.createElement(StackDisplay, { stack: {}, isTarget: true }),
-                                React.createElement('p', { className: "text-center mt-4 text-gray-600" },
-                                    `Color: ${gameState.targetPattern.color} • Letter: ${gameState.targetPattern.letter} • Shape: ${gameState.targetPattern.shape}`
-                                )
-                            )
-                        ),
-
-                        // Drop Zone
-                        React.createElement('div', { className: "flex-1" },
-                            React.createElement('h2', { className: "text-2xl font-bold text-center mb-4 text-purple-700" }, "Your Stack"),
-                            React.createElement('div', {
-                                ref: dropZoneRef,
-                                onDragOver: handleDragOver,
-                                onDrop: handleDrop,
-                                className: `bg-white rounded-lg p-6 shadow-lg border-4 border-dashed border-gray-300 min-h-40 flex flex-col items-center justify-center ${gameState.celebration ? 'animate-pulse bg-yellow-100' : ''}`
-                            },
-                                gameState.celebration ? 
-                                    React.createElement('div', { className: "text-center" },
-                                        React.createElement('div', { className: "text-4xl mb-2" }, "🎉"),
-                                        React.createElement('div', { className: "text-2xl font-bold text-green-600" }, "Perfect Match!")
-                                    ) :
-                                    React.createElement(React.Fragment, null,
-                                        React.createElement(StackDisplay, { stack: gameState.currentStack }),
-                                        React.createElement('button', {
-                                            onClick: resetStack,
-                                            className: "mt-4 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-                                        }, "Reset Stack")
-                                    )
-                            )
-                        )
-                    ),
-
-                    // Tile Palette
-                    React.createElement('div', { className: "mt-8 grid grid-cols-3 gap-6" },
-                        // Colors
-                        React.createElement('div', null,
-                            React.createElement('h3', { className: "text-xl font-bold text-center mb-4 text-purple-700" }, "Colors"),
-                            React.createElement('div', { className: "grid grid-cols-2 gap-3" },
-                                colors.map(color => 
-                                    React.createElement('div', {
-                                        key: color,
-                                        draggable: true,
-                                        onDragStart: (e) => handleDragStart(e, { type: 'color', value: color }),
-                                        className: "w-16 h-16 rounded-lg cursor-move hover:scale-110 transition-transform shadow-lg border-2 border-gray-300",
-                                        style: { backgroundColor: color },
-                                        title: `Color: ${color}`
-                                    })
-                                )
-                            )
-                        ),
-
-                        // Letters
-                        React.createElement('div', null,
-                            React.createElement('h3', { className: "text-xl font-bold text-center mb-4 text-purple-700" }, "Letters"),
-                            React.createElement('div', { className: "grid grid-cols-3 gap-3" },
-                                letters.map(letter => 
-                                    React.createElement('div', {
-                                        key: letter,
-                                        draggable: true,
-                                        onDragStart: (e) => handleDragStart(e, { type: 'letter', value: letter }),
-                                        className: "w-16 h-16 bg-white rounded-lg cursor-move hover:scale-110 transition-transform shadow-lg border-2 border-gray-300 flex items-center justify-center",
-                                        title: `Letter: ${letter}`
-                                    },
-                                        React.createElement('span', { className: "text-2xl font-bold text-gray-800" }, letter)
-                                    )
-                                )
-                            )
-                        ),
-
-                        // Shapes
-                        React.createElement('div', null,
-                            React.createElement('h3', { className: "text-xl font-bold text-center mb-4 text-purple-700" }, "Shapes"),
-                            React.createElement('div', { className: "grid grid-cols-2 gap-3" },
-                                shapes.map(shape => 
-                                    React.createElement('div', {
-                                        key: shape,
-                                        draggable: true,
-                                        onDragStart: (e) => handleDragStart(e, { type: 'shape', value: shape }),
-                                        className: "w-16 h-16 bg-white rounded-lg cursor-move hover:scale-110 transition-transform shadow-lg border-2 border-gray-300 flex items-center justify-center",
-                                        title: `Shape: ${shape}`
-                                    },
-                                        renderShape(shape, '#666', 40)
-                                    )
-                                )
-                            )
-                        )
-                    ),
-
-                    // Instructions
-                    React.createElement('div', { className: "mt-8 bg-white rounded-lg p-6 shadow-lg" },
-                        React.createElement('h3', { className: "text-xl font-bold mb-3 text-purple-700" }, "How to Play:"),
-                        React.createElement('ol', { className: "list-decimal list-inside space-y-2 text-gray-700" },
-                            React.createElement('li', null, "Look at the target pattern on the left"),
-                            React.createElement('li', null, "Drag a color tile to your stack first"),
-                            React.createElement('li', null, "Then drag the matching letter tile on top"),
-                            React.createElement('li', null, "Finally, drag the matching shape tile to complete your stack"),
-                            React.createElement('li', null, "Match all three to score points and get a new pattern!")
-                        )
-                    )
-                )
-            );
+        let game = {
+            currentPlayer: 0,
+            players: [
+                { name: 'Player 1', card: null, board: [], inventory: [] },
+                { name: 'Player 2', card: null, board: [], inventory: [] }
+            ],
+            supply: {
+                colors: { red: 8, blue: 8, green: 8, yellow: 8, purple: 8, orange: 8 },
+                letters: {},
+                shapes: 24
+            },
+            phase: 'setup', // setup, playing, gameOver
+            needsDiscard: false,
+            hasSpun: false,
+            actionUsed: false,
+            spinResult: null,
+            selectedItem: null,
+            message: 'Ready to start building words?',
+            helpText: 'Click Start Game to begin your word-building adventure!'
         };
 
-        ReactDOM.render(React.createElement(StackMatchGame), document.getElementById('root'));
+        function initSupply() {
+            WORD_CARDS.forEach(card => {
+                card.word.split('').forEach(letter => {
+                    if (!game.supply.letters[letter]) {
+                        game.supply.letters[letter] = 8;
+                    }
+                });
+            });
+        }
+
+        function startGame() {
+            initSupply();
+            
+            const shuffled = [...WORD_CARDS].sort(() => Math.random() - 0.5);
+            game.players.forEach((player, i) => {
+                player.card = shuffled[i];
+                player.board = player.card.pattern.map(p => ({
+                    color: null,
+                    letter: null,
+                    shape: null,
+                    requiredColor: p.color,
+                    requiredLetter: p.letter,
+                    requiredShape: p.shape
+                }));
+                player.inventory = [];
+            });
+            
+            game.phase = 'playing';
+            startTurn();
+        }
+
+        function startTurn() {
+            const player = game.players[game.currentPlayer];
+            
+            game.hasSpun = false;
+            game.actionUsed = false;
+            game.selectedItem = null;
+            game.spinResult = null;
+            
+            if (player.inventory.length >= 5) {
+                game.needsDiscard = true;
+                game.message = `${player.name} - Inventory Full!`;
+                game.helpText = 'Click an inventory item to discard it.';
+            } else {
+                game.needsDiscard = false;
+                game.message = `${player.name}'s Turn`;
+                game.helpText = 'Click Spin to get an item!';
+            }
+            
+            render();
+        }
+
+        function discardItem(index) {
+            if (!game.needsDiscard) return;
+            
+            const player = game.players[game.currentPlayer];
+            player.inventory.splice(index, 1);
+            
+            game.needsDiscard = false;
+            game.message = `${player.name}'s Turn`;
+            game.helpText = 'Click Spin to get an item!';
+            
+            render();
+        }
+
+        function spin() {
+            if (game.needsDiscard || game.hasSpun) return;
+            
+            const player = game.players[game.currentPlayer];
+            const options = [];
+            
+            // Add colors
+            COLORS.forEach(color => {
+                if (game.supply.colors[color] > 0) {
+                    options.push({ type: 'color', item: color });
+                }
+            });
+            
+            // Add letters
+            const neededLetters = [...new Set(player.card.word.split(''))];
+            neededLetters.forEach(letter => {
+                if (game.supply.letters[letter] > 0) {
+                    options.push({ type: 'letter', item: letter });
+                }
+            });
+            
+            // Add shapes
+            if (game.supply.shapes > 0) {
+                const neededShapes = [...new Set(player.card.pattern.map(p => p.shape))];
+                neededShapes.forEach(shape => {
+                    options.push({ type: 'shape', item: shape });
+                });
+            }
+            
+            // Special actions
+            options.push({ type: 'special', item: 'Take from Friend' });
+            options.push({ type: 'special', item: 'Wild Card' });
+            
+            if (options.length === 0) {
+                game.message = 'No items available!';
+                game.helpText = 'Click End Turn.';
+                render();
+                return;
+            }
+            
+            const result = options[Math.floor(Math.random() * options.length)];
+            game.spinResult = result;
+            game.hasSpun = true;
+            
+            if (result.type === 'special') {
+                game.message = `Got: ${result.item}!`;
+                if (result.item === 'Take from Friend') {
+                    game.helpText = 'Click another player\'s inventory item to take it.';
+                } else {
+                    game.helpText = 'Choose any available item.';
+                }
+            } else {
+                // Add regular item to inventory
+                if (result.type === 'shape') {
+                    game.supply.shapes--;
+                } else {
+                    game.supply[result.type + 's'][result.item]--;
+                }
+                
+                player.inventory.push(result);
+                game.message = `Got: ${result.item}!`;
+                game.helpText = 'Select an item from inventory and place it on the board.';
+            }
+            
+            render();
+        }
+
+        function selectItem(index) {
+            if (!game.hasSpun || game.actionUsed) return;
+            
+            if (game.selectedItem === index) {
+                game.selectedItem = null;
+                game.message = 'Item deselected';
+                game.helpText = 'Select an item to place it.';
+            } else {
+                game.selectedItem = index;
+                const item = game.players[game.currentPlayer].inventory[index];
+                game.message = `Selected: ${item.item}`;
+                game.helpText = 'Click a board slot to place it.';
+            }
+            
+            render();
+        }
+
+        function placeItem(slotIndex) {
+            if (!game.hasSpun || game.actionUsed || game.selectedItem === null) return;
+            
+            const player = game.players[game.currentPlayer];
+            const item = player.inventory[game.selectedItem];
+            const slot = player.board[slotIndex];
+            
+            // Validate placement
+            let canPlace = false;
+            
+            if (item.type === 'color') {
+                canPlace = !slot.color && slot.requiredColor === item.item;
+            } else if (item.type === 'letter') {
+                canPlace = !slot.letter && slot.color && slot.requiredLetter === item.item;
+            } else if (item.type === 'shape') {
+                canPlace = slot.color && slot.letter && !slot.shape && slot.requiredShape === item.item;
+            }
+            
+            if (!canPlace) {
+                game.message = `Cannot place ${item.item} there!`;
+                render();
+                return;
+            }
+            
+            // Place the item
+            if (item.type === 'color') {
+                slot.color = item.item;
+            } else if (item.type === 'letter') {
+                slot.letter = item.item;
+            } else if (item.type === 'shape') {
+                slot.shape = item.item;
+                
+                // Check win condition
+                if (player.board.every(s => s.color && s.letter && s.shape)) {
+                    game.phase = 'gameOver';
+                    game.message = `${player.name} Wins!`;
+                    game.helpText = `Completed "${player.card.word}"!`;
+                    render();
+                    return;
+                }
+            }
+            
+            // Remove from inventory
+            player.inventory.splice(game.selectedItem, 1);
+            game.selectedItem = null;
+            game.actionUsed = true;
+            
+            game.message = `Placed ${item.item}!`;
+            game.helpText = 'Turn complete - Click End Turn.';
+            
+            render();
+        }
+
+        function takeFromFriend(playerIndex, itemIndex) {
+            if (!game.hasSpun || game.actionUsed || !game.spinResult || game.spinResult.item !== 'Take from Friend') return;
+            
+            const currentPlayer = game.players[game.currentPlayer];
+            const otherPlayer = game.players[playerIndex];
+            
+            if (currentPlayer.inventory.length >= 5) {
+                game.message = 'Your inventory is full!';
+                render();
+                return;
+            }
+            
+            const item = otherPlayer.inventory[itemIndex];
+            otherPlayer.inventory.splice(itemIndex, 1);
+            currentPlayer.inventory.push(item);
+            
+            game.spinResult = null;
+            game.actionUsed = true;
+            game.message = `Took ${item.item}!`;
+            game.helpText = 'Turn complete - Click End Turn.';
+            
+            render();
+        }
+
+        function chooseWildCard(type, item) {
+            if (!game.hasSpun || game.actionUsed || !game.spinResult || game.spinResult.item !== 'Wild Card') return;
+            
+            const player = game.players[game.currentPlayer];
+            
+            // Deduct from supply
+            if (type === 'shape') {
+                game.supply.shapes--;
+            } else {
+                game.supply[type + 's'][item]--;
+            }
+            
+            player.inventory.push({ type, item });
+            
+            game.spinResult = null;
+            game.actionUsed = true;
+            game.message = `Chose ${item}!`;
+            game.helpText = 'Turn complete - Click End Turn.';
+            
+            render();
+        }
+
+        function endTurn() {
+            game.currentPlayer = (game.currentPlayer + 1) % game.players.length;
+            startTurn();
+        }
+
+        function canPlaceHere(item, slot) {
+            if (item.type === 'color') {
+                return !slot.color && slot.requiredColor === item.item;
+            } else if (item.type === 'letter') {
+                return !slot.letter && slot.color && slot.requiredLetter === item.item;
+            } else if (item.type === 'shape') {
+                return slot.color && slot.letter && !slot.shape && slot.requiredShape === item.item;
+            }
+            return false;
+        }
+
+        function render() {
+            const app = document.getElementById('app');
+            app.innerHTML = '';
+            
+            if (game.phase === 'setup') {
+                app.innerHTML = `
+                    <div class="game-status">
+                        <h3>${game.message}</h3>
+                        <p>${game.helpText}</p>
+                        <button class="btn btn-spin" onclick="startGame()">Start Game</button>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Supply
+            const supplyDiv = document.createElement('div');
+            supplyDiv.className = 'global-supply';
+            supplyDiv.innerHTML = '<strong>Global Supply:</strong><br><br>';
+            
+            COLORS.forEach(color => {
+                const counter = document.createElement('span');
+                counter.className = 'supply-counter';
+                counter.style.backgroundColor = color;
+                counter.style.color = color === 'yellow' ? 'black' : 'white';
+                counter.textContent = game.supply.colors[color];
+                supplyDiv.appendChild(counter);
+            });
+            
+            const shapesCounter = document.createElement('span');
+            shapesCounter.className = 'supply-counter';
+            shapesCounter.style.backgroundColor = '#495057';
+            shapesCounter.textContent = `Shapes: ${game.supply.shapes}`;
+            supplyDiv.appendChild(shapesCounter);
+            
+            app.appendChild(supplyDiv);
+            
+            // Status
+            const statusDiv = document.createElement('div');
+            statusDiv.className = 'game-status';
+            statusDiv.innerHTML = `<h3>${game.message}</h3><p>${game.helpText}</p>`;
+            app.appendChild(statusDiv);
+            
+            // Players
+            renderPlayers(app);
+            
+            // Actions
+            if (game.phase === 'playing') {
+                renderActions(app);
+            }
+            
+            if (game.phase === 'gameOver') {
+                renderWinScreen(app);
+            }
+        }
+
+        function renderPlayers(container) {
+            const playersDiv = document.createElement('div');
+            playersDiv.className = 'players-area';
+            
+            game.players.forEach((player, playerIndex) => {
+                const playerDiv = document.createElement('div');
+                playerDiv.className = `player-card ${playerIndex === game.currentPlayer ? 'active' : ''}`;
+                
+                const nameDiv = document.createElement('div');
+                nameDiv.className = 'player-name';
+                nameDiv.textContent = `${player.name} ${playerIndex === game.currentPlayer ? '(Active)' : ''}`;
+                playerDiv.appendChild(nameDiv);
+                
+                if (player.card) {
+                    // Word card
+                    const cardDiv = document.createElement('div');
+                    cardDiv.className = 'word-card';
+                    
+                    cardDiv.innerHTML = `
+                        <div class="word-emoji">${player.card.image}</div>
+                        <div class="word-title">${player.card.word}</div>
+                    `;
+                    
+                    const patternDiv = document.createElement('div');
+                    patternDiv.className = 'word-pattern';
+                    player.card.pattern.forEach(p => {
+                        const tile = document.createElement('div');
+                        tile.className = `pattern-tile ${p.shape}`;
+                        tile.style.backgroundColor = p.color;
+                        tile.textContent = p.letter;
+                        patternDiv.appendChild(tile);
+                    });
+                    cardDiv.appendChild(patternDiv);
+                    playerDiv.appendChild(cardDiv);
+                    
+                    // Board
+                    const boardDiv = document.createElement('div');
+                    boardDiv.className = 'board-slots';
+                    
+                    player.board.forEach((slot, slotIndex) => {
+                        const slotDiv = document.createElement('div');
+                        slotDiv.className = 'board-slot';
+                        
+                        if (slot.color) slotDiv.style.backgroundColor = slot.color;
+                        if (slot.color && slot.letter && slot.shape) slotDiv.classList.add('complete');
+                        
+                        // Slot info
+                        const infoDiv = document.createElement('div');
+                        infoDiv.className = 'slot-info';
+                        infoDiv.textContent = `${slotIndex + 1}: ${slot.requiredColor[0]}${slot.requiredLetter}`;
+                        slotDiv.appendChild(infoDiv);
+                        
+                        // Letter
+                        if (slot.letter) {
+                            slotDiv.textContent = slot.letter;
+                        }
+                        
+                        // Shape
+                        if (slot.shape) {
+                            const shapeDiv = document.createElement('div');
+                            shapeDiv.className = `slot-shape ${slot.shape}`;
+                            slotDiv.appendChild(shapeDiv);
+                        }
+                        
+                        // Placement hints and clicks
+                        if (playerIndex === game.currentPlayer && game.hasSpun && !game.actionUsed && game.selectedItem !== null) {
+                            const selectedItem = player.inventory[game.selectedItem];
+                            if (canPlaceHere(selectedItem, slot)) {
+                                slotDiv.classList.add('placement-hint');
+                            }
+                            slotDiv.onclick = () => placeItem(slotIndex);
+                        }
+                        
+                        boardDiv.appendChild(slotDiv);
+                    });
+                    
+                    playerDiv.appendChild(boardDiv);
+                    
+                    // Progress
+                    const completed = player.board.filter(s => s.color && s.letter && s.shape).length;
+                    const progressDiv = document.createElement('div');
+                    progressDiv.className = `progress-indicator ${completed === player.board.length ? 'complete' : ''}`;
+                    progressDiv.textContent = `Complete Stacks: ${completed}/${player.board.length}`;
+                    playerDiv.appendChild(progressDiv);
+                    
+                    // Inventory
+                    renderInventory(playerDiv, player, playerIndex);
+                }
+                
+                playersDiv.appendChild(playerDiv);
+            });
+            
+            container.appendChild(playersDiv);
+        }
+
+        function renderInventory(playerDiv, player, playerIndex) {
+            const invDiv = document.createElement('div');
+            invDiv.className = 'inventory-section';
+            
+            const titleDiv = document.createElement('div');
+            titleDiv.className = 'inventory-title';
+            titleDiv.textContent = `Inventory (${player.inventory.length}/5):`;
+            invDiv.appendChild(titleDiv);
+            
+            const visualDiv = document.createElement('div');
+            visualDiv.className = 'inventory-visual';
+            
+            for (let i = 0; i < 5; i++) {
+                if (i < player.inventory.length) {
+                    const item = player.inventory[i];
+                    const tile = document.createElement('div');
+                    tile.className = `inventory-tile ${item.type}`;
+                    
+                    if (game.selectedItem === i && playerIndex === game.currentPlayer) {
+                        tile.classList.add('selected');
+                    }
+                    
+                    if (item.type === 'color') {
+                        tile.style.backgroundColor = item.item;
+                        tile.style.color = item.item === 'yellow' ? 'black' : 'white';
+                    } else if (item.type === 'letter') {
+                        tile.textContent = item.item;
+                    } else if (item.type === 'shape') {
+                        tile.className += ` ${item.item}`;
+                        tile.title = item.item;
+                    }
+                    
+                    // Click handlers
+                    if (playerIndex === game.currentPlayer) {
+                        if (game.needsDiscard) {
+                            tile.onclick = () => discardItem(i);
+                            tile.style.border = '3px dashed #dc3545';
+                        } else if (game.hasSpun && !game.actionUsed) {
+                            tile.onclick = () => selectItem(i);
+                        }
+                    } else if (game.spinResult && game.spinResult.item === 'Take from Friend' && game.hasSpun && !game.actionUsed) {
+                        tile.onclick = () => takeFromFriend(playerIndex, i);
+                        tile.style.border = '3px dashed #007bff';
+                    }
+                    
+                    visualDiv.appendChild(tile);
+                } else {
+                    const emptySlot = document.createElement('div');
+                    emptySlot.className = 'empty-slot';
+                    visualDiv.appendChild(emptySlot);
+                }
+            }
+            
+            invDiv.appendChild(visualDiv);
+            playerDiv.appendChild(invDiv);
+        }
+
+        function renderActions(container) {
+            const actionsDiv = document.createElement('div');
+            actionsDiv.className = 'action-area';
+            
+            if (game.needsDiscard) {
+                actionsDiv.innerHTML = '<h4 style="color: #dc3545;">Click an inventory item to discard!</h4>';
+                
+            } else if (!game.hasSpun) {
+                const spinBtn = document.createElement('button');
+                spinBtn.className = 'btn btn-spin';
+                spinBtn.textContent = 'Spin!';
+                spinBtn.onclick = spin;
+                actionsDiv.appendChild(spinBtn);
+                
+            } else {
+                if (game.spinResult) {
+                    const resultDiv = document.createElement('div');
+                    resultDiv.className = 'spin-result';
+                    resultDiv.textContent = `You got: ${game.spinResult.item}!`;
+                    actionsDiv.appendChild(resultDiv);
+                    
+                    if (game.spinResult.type === 'special' && !game.actionUsed) {
+                        if (game.spinResult.item === 'Take from Friend') {
+                            const specialDiv = document.createElement('div');
+                            specialDiv.className = 'special-area';
+                            specialDiv.innerHTML = '<h4>Click another player\'s inventory item!</h4>';
+                            actionsDiv.appendChild(specialDiv);
+                        } else if (game.spinResult.item === 'Wild Card') {
+                            renderWildCardOptions(actionsDiv);
+                        }
+                    }
+                } else if (!game.actionUsed) {
+                    const instructionDiv = document.createElement('div');
+                    instructionDiv.innerHTML = '<h4>Select an inventory item and place it!</h4>';
+                    actionsDiv.appendChild(instructionDiv);
+                }
+            }
+            
+            container.appendChild(actionsDiv);
+            
+            // End Turn button in separate fixed area
+            const endTurnArea = document.createElement('div');
+            endTurnArea.className = 'end-turn-area';
+            const endBtn = document.createElement('button');
+            endBtn.className = 'btn btn-end';
+            endBtn.textContent = 'End Turn';
+            endBtn.onclick = endTurn;
+            endTurnArea.appendChild(endBtn);
+            container.appendChild(endTurnArea);
+        }
+
+        function renderWildCardOptions(container) {
+            const specialDiv = document.createElement('div');
+            specialDiv.className = 'special-area';
+            specialDiv.innerHTML = '<h4>Choose any item:</h4>';
+            
+            const grid = document.createElement('div');
+            grid.className = 'wild-grid';
+            
+            // Colors
+            COLORS.forEach(color => {
+                if (game.supply.colors[color] > 0) {
+                    const btn = document.createElement('button');
+                    btn.className = 'wild-btn';
+                    btn.style.backgroundColor = color;
+                    btn.style.color = color === 'yellow' ? 'black' : 'white';
+                    btn.textContent = game.supply.colors[color];
+                    btn.onclick = () => chooseWildCard('color', color);
+                    grid.appendChild(btn);
+                }
+            });
+            
+            // Letters
+            const player = game.players[game.currentPlayer];
+            const neededLetters = [...new Set(player.card.word.split(''))];
+            neededLetters.forEach(letter => {
+                if (game.supply.letters[letter] > 0) {
+                    const btn = document.createElement('button');
+                    btn.className = 'wild-btn';
+                    btn.style.background = '#fff';
+                    btn.style.color = '#333';
+                    btn.textContent = letter;
+                    btn.onclick = () => chooseWildCard('letter', letter);
+                    grid.appendChild(btn);
+                }
+            });
+            
+            // Shapes
+            if (game.supply.shapes > 0) {
+                const neededShapes = [...new Set(player.card.pattern.map(p => p.shape))];
+                neededShapes.forEach(shape => {
+                    const btn = document.createElement('button');
+                    btn.className = `wild-btn ${shape}`;
+                    btn.style.background = 'linear-gradient(135deg, #495057, #6c757d)';
+                    btn.style.color = 'white';
+                    btn.title = shape;
+                    btn.onclick = () => chooseWildCard('shape', shape);
+                    grid.appendChild(btn);
+                });
+            }
+            
+            specialDiv.appendChild(grid);
+            container.appendChild(specialDiv);
+        }
+
+        function renderWinScreen(container) {
+            const overlay = document.createElement('div');
+            overlay.className = 'win-overlay';
+            overlay.innerHTML = `
+                <div class="win-content">
+                    <h2>${game.message}</h2>
+                    <p style="font-size: 1.2em;">${game.helpText}</p>
+                    <button onclick="location.reload()" class="btn btn-spin">Play Again</button>
+                </div>
+            `;
+            container.appendChild(overlay);
+        }
+
+        render();
     </script>
 </body>
 </html>
